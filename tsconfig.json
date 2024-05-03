@@ -1,0 +1,55 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "es2020"
+    ],
+    "removeComments": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "module": "commonjs",
+    "target": "es2020",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "resolveJsonModule": true,
+    "paths": {
+      "@adapter/*": [
+        "./src/adapter/*"
+      ],
+      "@handlers/*": [
+        "./src/handlers/*"
+      ],
+      "@domain/*": [
+        "./src/domain/*"
+      ],
+      "@shared/*": [
+        "./src/shared/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js",
+    "../transactions/src/repository/redis.repository.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/__tests__"
+  ],
+  "ts-node": {
+    "require": [
+      "tsconfig-paths/register"
+    ]
+  }
+}

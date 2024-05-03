@@ -1,0 +1,144 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Stack template
+Parameters:
+  TableUserName:
+    Type: String
+    Default: 'ddb-template'
+Globals:
+  Function:
+    Timeout: 15
+    Tracing: Active
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
+    Layers:
+      - !Ref RuntimeDependenciesLayer
+  Api:
+    TracingEnabled: true
+
+Resources:
+  RuntimeDependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Metadata:
+      BuildMethod: makefile 
+    Properties:
+      Description: Runtime dependencies for Lambdas
+      ContentUri: ./
+      CompatibleRuntimes:
+        - nodejs20.x
+      RetentionPolicy: Retain
+  TemplateUsersApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: 'test'
+  CreateUserFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Handler: dist/handlers/create.handler
+      FunctionName:
+        Fn::Join:
+        - '-'
+        - - Ref: AWS::StackName
+          - create
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TableUserName
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref TableUserName
+        - DynamoDBReadPolicy:
+            TableName: !Ref TableUserName
+  CreateUserLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${CreateUserFunction}
+      RetentionInDays: 14
+
+  FindByIdUserFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Handler: dist/handlers/findById.handler
+      FunctionName:
+        Fn::Join:
+        - '-'
+        - - Ref: AWS::StackName
+          - find-by-id
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TableUserName
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref TableUserName
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Method: get
+            Path: /find-user
+            ApiId: "yd9rw9ayci"
+  FindByIdUserLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FindByIdUserFunction}
+      RetentionInDays: 14
+
+  
+  AuthLoginFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Handler: dist/handlers/authLogin.handler
+      FunctionName:
+        Fn::Join:
+        - '-'
+        - - Ref: AWS::StackName
+          - auth-login
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TableUserName
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref TableUserName
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Method: get
+            Path: /auth
+            ApiId: !Ref TemplateUsersApi
+            
+  AuthLoginLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AuthLoginFunction}
+      RetentionInDays: 14
+
+  AuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Handler: dist/handlers/authorizer.handler
+      FunctionName:
+        Fn::Join:
+        - '-'
+        - - Ref: AWS::StackName
+          - authorizer
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TableUserName
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref TableUserName
+
+  AuthorizerLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AuthorizerFunction}
+      RetentionInDays: 14
