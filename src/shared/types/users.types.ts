@@ -16,3 +16,17 @@ export type CreateUsers = {
   isActive: boolean
   isPasswordChange: boolean
 }
+
+export type UnmarshallingUser = {
+  id: string
+  dtCreated: string
+  dtUpdated: string
+  firstName: string
+  lastName: string
+  username: string
+  email: string
+  salt: string
+  password: string
+  isActive: boolean
+  isPasswordChange: boolean
+}

@@ -1,4 +1,4 @@
-import {CreateUsers} from '@shared/types'
+import {CreateUsers, UnmarshallingUser} from '@shared/types'
 import {Entity} from '../common/entity'
 import {EncryptPassword} from '@adapter/encryptPassword/encrypt-password.adapter'
 import {SchemaEnum} from '@shared/schemas'
@@ -35,10 +35,15 @@ export class User extends Entity<CreateUsers> {
   }
 
   public toDto() {}
-  public validatePassword(inputPassword: string) {
+  public comparePassword(inputPassword: string) {
     const encryptPassword = new EncryptPassword()
     const isValidated = encryptPassword.desEncrypt(inputPassword, this.props.password, this.props.salt)
 
     return isValidated
+  }
+
+  public static toDomain(raw: UnmarshallingUser) {
+    const instance = new User(raw)
+    return instance
   }
 }
