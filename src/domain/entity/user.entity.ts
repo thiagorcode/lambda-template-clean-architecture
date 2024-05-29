@@ -1,6 +1,6 @@
 import {CreateUsers, UnmarshallingUser} from '@shared/types'
 import {Entity} from '../common/entity'
-import {EncryptPassword} from '@adapter/encryptPassword/encrypt-password.adapter'
+import {EncryptPassword} from '@adapter/encrypt-password/encrypt-password.adapter'
 import {SchemaEnum} from '@shared/schemas'
 export class User extends Entity<CreateUsers> {
   private constructor({id, dtCreated, dtUpdated, ...props}: CreateUsers) {
@@ -8,6 +8,8 @@ export class User extends Entity<CreateUsers> {
   }
 
   public static createUser(props: CreateUsers) {
+    // Inject Dependency 
+    //(props: CreateUsers, encryptPassword: EncryptPassword)
     const encryptPassword = new EncryptPassword()
     const {passwordEncrypted, salt} = encryptPassword.encrypt(props.password)
     const userProps: CreateUsers = {

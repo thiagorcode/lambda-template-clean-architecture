@@ -35,7 +35,6 @@ export class DynamoDbAdapter implements DynamoDBAdapterInterface {
   async get<T extends object>(id: string) {
     const params = new GetCommand({
       TableName: this.tableName,
-
       Key: {
         [this.primaryKey]: id
       }
